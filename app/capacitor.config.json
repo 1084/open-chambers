@@ -2,7 +2,6 @@
   "appId": "com.johnhubert.openchambers",
   "appName": "Open Chambers",
   "webDir": "www",
-  "bundledWebRuntime": false,
   "ios": {
     "contentInset": "never",
     "backgroundColor": "#F7F6F2",
