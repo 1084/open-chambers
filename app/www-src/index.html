@@ -1,0 +1,258 @@
+<!doctype html>
+<!-- Open Chambers — Copyright (c) 2026 John Hubert LLC. All rights reserved. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="color-scheme" content="light dark">
+<title>Open Chambers</title>
+<style>
+  :root { --bg:#F7F6F2; --surface:#fff; --surface-2:#EFEDE7; --ink:#1A1D21; --ink-2:#4A4F57; --ink-3:#7C818A; --line:#E4E2DB; --accent:#1F3A5F; --accent-soft:#E4EAF2; --dem:#3B6FB6; --rep:#C4423A; --ind:#6B8E23; --yea:#2E7D4F; --nay:#B23A3A; --nv:#A5A9B0; --green:#34C759;
+    --serif:"New York","Newsreader",Georgia,serif; --sans:-apple-system,"SF Pro Text","Public Sans","Helvetica Neue",Arial,sans-serif; --mono:"SF Mono",Menlo,monospace; --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px) }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14171B; --surface:#1C2026; --surface-2:#242930; --ink:#ECEEF1; --ink-2:#B4B9C1; --ink-3:#7C818A; --line:#2C323A; --accent:#8FB3E0; --accent-soft:#1E2A3A; --dem:#6D9BDC; --rep:#E06A62; --ind:#9BBF4A; --yea:#5BB47F; --nay:#E07070; --nv:#6C7079 } }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased; -webkit-user-select:none; user-select:none; overscroll-behavior:none }
+  a { color:var(--accent); text-decoration:none }
+  #app { position:fixed; inset:0; display:flex; flex-direction:column }
+  .view { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:calc(10px + var(--safe-t)) 16px 24px }
+  .h { font-family:var(--serif); font-weight:600; font-size:28px; line-height:1.1; letter-spacing:-.01em; margin:10px 0 6px }
+  .sub { color:var(--ink-2); font-size:15px; margin:0 0 16px }
+  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:18px 0 8px }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:13px 14px; margin-bottom:10px }
+  .btn { display:block; width:100%; text-align:center; background:var(--accent); color:#fff; font-weight:600; font-size:17px; padding:15px; border-radius:14px; border:0; font-family:inherit }
+  .btn.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
+  .btn:disabled { opacity:.5 }
+  input.zip { width:100%; font:inherit; font-family:var(--mono); font-size:24px; letter-spacing:.12em; padding:14px 16px; border:1.5px solid var(--line); border-radius:14px; background:var(--surface); color:var(--ink); margin-bottom:12px }
+  .row { display:flex; align-items:center; gap:12px }
+  .avatar { width:44px; height:54px; border-radius:9px; object-fit:cover; background:var(--surface-2); flex:0 0 auto }
+  .avatar.sm { width:32px; height:39px; border-radius:7px }
+  .initials { display:grid; place-items:center; font-family:var(--serif); font-size:16px; color:var(--ink-3) }
+  .name { font-family:var(--serif); font-weight:600; font-size:17px; line-height:1.15 }
+  .meta { font-size:13px; color:var(--ink-2) }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px } .D { background:var(--dem) } .R { background:var(--rep) } .I { background:var(--ind) }
+  .toggle { width:51px; height:31px; border-radius:16px; background:#D9D9DE; position:relative; flex:0 0 auto; margin-left:auto; border:0; padding:0; transition:background .15s } .toggle::after { content:""; position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.25); transition:transform .15s } .toggle.on { background:var(--green) } .toggle.on::after { transform:translateX(20px) }
+  .tag { display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:6px; background:var(--surface-2); color:var(--ink-2) } .tag.yea { background:color-mix(in srgb,var(--yea) 16%,transparent); color:var(--yea) } .tag.nay { background:color-mix(in srgb,var(--nay) 16%,transparent); color:var(--nay) }
+  .bar { height:8px; border-radius:4px; overflow:hidden; display:flex; background:var(--surface-2); margin-top:8px } .bar i { display:block; height:100% }
+  .seg { display:flex; background:var(--surface-2); border-radius:10px; padding:3px } .seg button { flex:1; font:inherit; font-size:14px; font-weight:500; padding:8px; border:0; border-radius:8px; background:transparent; color:var(--ink-2) } .seg button.on { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08) }
+  .vote { padding:12px 0; border-bottom:1px solid var(--line) } .vote:last-child { border:0 } .vote .q { font-weight:600; font-size:15px } .vote .d { color:var(--ink-2); font-size:14px; margin-top:2px } .vote .m { font-family:var(--mono); font-size:11px; color:var(--ink-3); margin-top:4px }
+  .summary { background:var(--accent-soft); border-radius:14px; padding:12px 14px; font-size:15px } .summary .src { font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); margin-bottom:6px }
+  .setting { display:flex; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid var(--line); font-size:16px } .setting:last-child { border:0 } .setting small { display:block; color:var(--ink-3); font-size:13px }
+  .tabbar { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--line); background:var(--surface); padding:8px 0 calc(8px + var(--safe-b)); font-size:10.5px; text-align:center; color:var(--ink-3) } .tabbar button { font:inherit; font-size:inherit; color:inherit; background:none; border:0; padding:0 } .tabbar button.on { color:var(--accent) } .tabbar i { display:block; width:24px; height:24px; margin:0 auto 3px; background:currentColor; border-radius:6px }
+  .tabbar i.home { clip-path:polygon(50% 0,100% 45%,85% 45%,85% 100%,15% 100%,15% 45%,0 45%) } .tabbar i.reps { border-radius:50% } .tabbar i.votes { clip-path:polygon(0 30%,100% 30%,100% 45%,0 45%,0 55%,100% 55%,100% 70%,0 70%) } .tabbar i.gear { clip-path:circle(38%) }
+  .empty { color:var(--ink-3); padding:28px 12px; text-align:center; border:1px dashed var(--line); border-radius:14px; font-size:15px }
+  .back { font-size:16px; font-weight:600; color:var(--accent); margin:6px 0 2px; display:inline-block }
+  .prow { display:flex; align-items:center; gap:8px; white-space:nowrap; font-size:13px; margin-top:6px } .prow .lab { width:96px } .prow .bar { flex:1; margin:0 } .prow .n { font-family:var(--mono); font-size:12px; width:52px; text-align:right; color:var(--ink-2) }
+  .note { font-size:13.5px; color:var(--ink-2); background:var(--surface-2); border-radius:12px; padding:10px 12px }
+  .chip { display:inline-block; margin:3px 8px 3px 0; font-size:14px }
+</style>
+</head>
+<body>
+<div id="app"><div class="view"><div class="empty">Loading…</div></div></div>
+
+<script>
+/* ===================== config + state ===================== */
+const DATA = "https://johnhubert.llc/floor/data/";
+const API = "https://api.johnhubert.llc";
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const STATES = { AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"District of Columbia",PR:"Puerto Rico",GU:"Guam",VI:"U.S. Virgin Islands",AS:"American Samoa",MP:"Northern Mariana Islands" };
+const POS = { Y:["Yea","yea"], N:["Nay","nay"], P:["Present","p"], "-":["Not voting","nv"] };
+const photo = id => `https://unitedstates.github.io/images/congress/225x275/${id}.jpg`;
+const fmtDate = d => d ? new Date(d + "T12:00:00").toLocaleDateString(undefined, { month:"short", day:"numeric" }) : "";
+const seat = m => m.chamber === "senate" ? `Senate, ${STATES[m.state] || m.state}` : `House, ${m.state}${m.district ? "-" + m.district : " at large"}`;
+
+let MEMBERS = [], BY_ID = {}, VOTES = [], META = {}, ZIP = null;
+const S = { zip: "", follows: [], mode: "passage", summary: true, quiet: false, pushToken: null, pushStatus: "unknown", tab: "today", view: null };
+function loadState() { try { Object.assign(S, JSON.parse(localStorage.getItem("openchambers") || "{}")); } catch (e) {} S.view = null; }
+function saveState() { try { localStorage.setItem("openchambers", JSON.stringify({ zip:S.zip, follows:S.follows, mode:S.mode, summary:S.summary, quiet:S.quiet, pushToken:S.pushToken, pushStatus:S.pushStatus })); } catch (e) {} }
+
+async function loadData() {
+  const [m, v, meta] = await Promise.all([fetch(DATA + "members.json").then(r => r.json()), fetch(DATA + "votes-index.json").then(r => r.json()).catch(() => []), fetch(DATA + "meta.json").then(r => r.json()).catch(() => ({}))]);
+  MEMBERS = m; BY_ID = Object.fromEntries(m.map(x => [x.id, x])); VOTES = v; META = meta;
+}
+async function zipLookup(z) { if (!ZIP) ZIP = await fetch(DATA + "zip.json").then(r => r.json()); return ZIP[z] || null; }
+const mvCache = {}; async function memberVotes(id) { return mvCache[id] ||= await fetch(`${DATA}members/${id}.json`).then(r => r.json()).then(j => j.votes).catch(() => []); }
+const vCache = {}; async function voteDetail(id) { return vCache[id] ||= await fetch(`${DATA}votes/${id}.json`).then(r => r.json()).catch(() => null); }
+async function repsForZip(z) {
+  const cds = await zipLookup(z); if (!cds) return null;
+  const states = [...new Set(cds.map(c => c.split("-")[0]))];
+  const reps = cds.map(c => { const [st, d] = c.split("-"); return MEMBERS.find(m => m.chamber === "house" && m.state === st && (m.district || 0) === +d); }).filter(Boolean);
+  const sens = MEMBERS.filter(m => m.chamber === "senate" && states.includes(m.state));
+  return { cds, reps, sens, all: [...reps, ...sens] };
+}
+
+/* ===================== push (native only) ===================== */
+const isNative = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+async function setupPush() {
+  if (!isNative()) { S.pushStatus = "web"; return; }
+  try {
+    const PN = window.Capacitor.registerPlugin("PushNotifications");
+    PN.addListener("registration", async t => { S.pushToken = t.value; S.pushStatus = "on"; saveState(); await syncSubscription(); render(); });
+    PN.addListener("registrationError", e => { S.pushStatus = "error"; saveState(); render(); });
+    PN.addListener("pushNotificationActionPerformed", a => { const d = a.notification?.data || {}; if (d.voteId) { S.tab = "today"; S.view = { vote: d.voteId }; render(); } });
+    let perm = await PN.checkPermissions();
+    if (perm.receive === "prompt") perm = await PN.requestPermissions();
+    if (perm.receive !== "granted") { S.pushStatus = "denied"; saveState(); return; }
+    await PN.register();
+  } catch (e) { S.pushStatus = "error"; saveState(); }
+}
+async function syncSubscription() {
+  if (!S.pushToken) return;
+  try {
+    if (!S.follows.length) { await fetch(API + "/v1/subscribe", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: S.pushToken }) }); return; }
+    await fetch(API + "/v1/subscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: S.pushToken, follows: S.follows, mode: S.mode, summary: S.summary, quiet: S.quiet }) });
+  } catch (e) { console.warn("subscribe failed", e); }
+}
+function haptic() { try { if (isNative()) window.Capacitor.registerPlugin("Haptics").impact({ style: "LIGHT" }); } catch (e) {} }
+
+/* ===================== components ===================== */
+function photoEl(m, cls = "") { return `<img class="avatar ${cls}" src="${photo(m.id)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'avatar initials ${cls}',textContent:'${esc(m.first[0] + m.last[0])}'}))">`; }
+function memberRow(m, right = "") { return `<div class="card row" data-member="${m.id}">${photoEl(m)}<div style="min-width:0"><div class="name">${esc(m.name)}</div><div class="meta"><span class="dot ${m.partyCode}"></span>${esc(m.party)} · ${esc(seat(m))}</div><div class="meta" style="color:var(--ink-3)">Next election ${m.nextElection}</div></div>${right}</div>`; }
+function followToggle(m) { const on = S.follows.includes(m.id); return `<button class="toggle ${on ? "on" : ""}" data-follow="${m.id}" aria-label="Follow ${esc(m.name)}"></button>`; }
+function voteCard(v, m, p) {
+  const t = v.tally, tot = t.yea + t.nay + t.present + t.nv || 1;
+  return `<div class="card" data-vote="${v.id}"><div class="row">${photoEl(m, "sm")}<div style="min-width:0"><div class="name" style="font-size:15px">${esc(m.name)} <span class="tag ${POS[p][1]}">${POS[p][0]}</span></div><div class="meta">${esc(v.question || "Vote")}${v.bill ? " · " + esc(v.bill) : ""}</div></div></div>
+    <div class="vote" style="border:0;padding:8px 0 0"><div class="q">${esc(v.description || v.bill || "")}</div><div class="m">${v.chamber === "senate" ? "Senate" : "House"} · ${esc(v.result || "")} ${t.yea}–${t.nay} · ${fmtDate(v.date)}</div></div>
+    <div class="bar"><i style="width:${t.yea / tot * 100}%;background:var(--yea)"></i><i style="width:${t.nay / tot * 100}%;background:var(--nay)"></i><i style="width:${(t.present + t.nv) / tot * 100}%;background:var(--nv)"></i></div></div>`;
+}
+function tabbar() { return `<div class="tabbar">${[["today", "home", "Today"], ["reps", "reps", "My reps"], ["votes", "votes", "All votes"], ["settings", "gear", "Settings"]].map(([k, ic, l]) => `<button class="${S.tab === k ? "on" : ""}" data-tab="${k}"><i class="${ic}"></i>${l}</button>`).join("")}</div>`; }
+
+/* ===================== screens ===================== */
+function onboardingZip() {
+  return `<div class="view"><div style="height:36px"></div><div style="width:52px;height:52px;border-radius:14px;background:var(--accent);margin-bottom:24px"></div>
+    <div class="h">Who represents you?</div><p class="sub">Enter your ZIP code to find your representative and senators. It stays on this phone.</p>
+    <form id="zipform"><input class="zip" id="zip" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="ZIP code" value="${esc(S.zip)}" autofocus><button class="btn" type="submit">Find my representatives</button></form>
+    <p class="sub" style="text-align:center;margin-top:16px;font-size:13px;color:var(--ink-3)">No account. No tracking.</p></div>`;
+}
+async function onboardingReps() {
+  const r = await repsForZip(S.zip);
+  if (!r) return `<div class="view"><a class="back" data-go="zip">‹ Back</a><div class="h">No district found</div><p class="sub">ZIP ${esc(S.zip)} isn't in our map. Try a neighboring ZIP.</p></div>`;
+  const cd = r.cds[0].split("-");
+  return `<div class="view"><a class="back" data-go="zip">‹ Change ZIP</a><div class="h">Your representatives</div><p class="sub">${esc(STATES[cd[0]] || cd[0])}${r.cds.length > 1 ? ` · ZIP ${esc(S.zip)} spans ${r.cds.length} districts; all are shown` : ` – District ${cd[1] === "0" ? "at large" : esc(cd[1])}`}. Turn on alerts for anyone you want to follow.</p>
+    ${r.all.map(m => memberRow(m, followToggle(m))).join("")}
+    <div class="eyebrow">Alert me on</div><div class="seg" id="mode"><button data-mode="passage" class="${S.mode === "passage" ? "on" : ""}">Final passage</button><button data-mode="all" class="${S.mode === "all" ? "on" : ""}">Every roll call</button></div>
+    <p class="sub" style="margin-top:8px;font-size:13px;color:var(--ink-3)">Final passage decides a bill: a few alerts a week. Every roll call adds amendments and procedure: many more.</p>
+    <button class="btn" data-go="done" ${S.follows.length ? "" : "disabled"}>${S.follows.length ? "Turn on alerts" : "Pick at least one"}</button></div>`;
+}
+async function todayView() {
+  if (S.view?.vote) return voteView(S.view.vote);
+  if (S.view?.member) return memberView(S.view.member);
+  const followed = S.follows.map(id => BY_ID[id]).filter(Boolean);
+  const items = [];
+  for (const m of followed) { const mv = await memberVotes(m.id); const pos = Object.fromEntries(mv); for (const v of VOTES) { if (pos[v.id] !== undefined) items.push({ v, m, p: pos[v.id] }); } }
+  items.sort((a, b) => (b.v.date || "").localeCompare(a.v.date || "") || b.v.number - a.v.number);
+  const today = new Date().toISOString().slice(0, 10), week = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+  const t = items.filter(i => i.v.date === today), w = items.filter(i => i.v.date < today && i.v.date >= week), older = items.filter(i => i.v.date < week);
+  const sec = (title, list, n) => list.length ? `<div class="eyebrow">${title}</div>${list.slice(0, n).map(i => voteCard(i.v, i.m, i.p)).join("")}` : "";
+  const pushNote = S.pushStatus === "denied" ? `<div class="note">Notifications are off for Open Chambers. Turn them on in Settings › Notifications to get alerts.</div>` : S.pushStatus === "web" ? `<div class="note">Alerts arrive as notifications in the iPhone app. On the web, check back here.</div>` : "";
+  return `<div class="view"><div class="eyebrow" style="margin-top:4px">${new Date().toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric" })}</div>
+    <div class="h" style="font-size:24px;margin-top:0">${t.length ? `Your reps voted ${t.length} time${t.length === 1 ? "" : "s"} today` : "No votes from your reps today"}</div>${pushNote}
+    ${sec("Today", t, 50)}${sec("This week", w, 30)}${sec("Earlier", older, 40)}
+    ${items.length ? "" : `<div class="empty">${VOTES.length ? "Nothing recorded yet for the members you follow." : "Vote records load after the next nightly update."}</div>`}</div>${tabbar()}`;
+}
+async function repsView() {
+  if (S.view?.member) return memberView(S.view.member);
+  const r = await repsForZip(S.zip);
+  return `<div class="view"><div class="h">My representatives</div><p class="sub">ZIP ${esc(S.zip)} · <a data-go="zip">change</a></p>
+    ${r ? r.all.map(m => memberRow(m, followToggle(m))).join("") : `<div class="empty">No district found for this ZIP.</div>`}
+    <p class="sub" style="font-size:13px;color:var(--ink-3);margin-top:10px">Tap a name for their profile and full record. The switch controls alerts.</p></div>${tabbar()}`;
+}
+async function memberView(id) {
+  const m = BY_ID[id]; if (!m) return `<div class="view"><div class="empty">Not found.</div></div>${tabbar()}`;
+  const mv = await memberVotes(id); const pos = Object.fromEntries(mv); const list = VOTES.filter(v => pos[v.id] !== undefined).slice(0, 40);
+  const v = m.votes;
+  const spectrum = m.nominate ? `<div class="card"><div class="eyebrow" style="margin:0 0 8px">Where they sit</div><div style="position:relative;height:34px"><div style="position:absolute;left:0;right:0;top:14px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--dem),#B8BCC2 50%,var(--rep));opacity:.55"></div><span style="position:absolute;top:6px;left:${(m.nominate.dim1 + 1) / 2 * 100}%;width:16px;height:22px;margin-left:-8px;border-radius:8px;background:${m.partyCode === "D" ? "var(--dem)" : m.partyCode === "R" ? "var(--rep)" : "var(--ind)"};border:2px solid var(--surface)"></span></div><div class="meta">DW-NOMINATE ${m.nominate.dim1.toFixed(2)} · −1 liberal, +1 conservative · <a href="https://johnhubert.llc/floor/#/about" target="_blank">method</a></div></div>` : "";
+  return `<div class="view"><a class="back" data-back="1">‹ Back</a>
+    <div class="row" style="margin:8px 0 12px">${photoEl(m)}<div><div class="name" style="font-size:22px">${esc(m.name)}</div><div class="meta"><span class="dot ${m.partyCode}"></span>${esc(m.party)} · ${esc(seat(m))}</div></div>${followToggle(m)}</div>
+    <div class="card"><div class="row" style="justify-content:space-between"><div><div class="meta">In office since</div><b>${m.since.slice(0, 4)}</b> <span class="meta">(${m.yearsInOffice} yrs)</span></div><div><div class="meta">Next election</div><b>${m.nextElection}</b></div><div><div class="meta">With party</div><b>${v.partyUnity != null ? v.partyUnity + "%" : "—"}</b></div><div><div class="meta">Votes cast</div><b>${v.attendance != null ? v.attendance + "%" : "—"}</b></div></div></div>
+    ${spectrum}
+    <div class="eyebrow">Recent votes</div>${list.length ? list.map(x => `<div class="vote" data-vote="${x.id}"><div class="q">${esc(x.question || "Vote")}${x.bill ? " · " + esc(x.bill) : ""} <span class="tag ${POS[pos[x.id]][1]}">${POS[pos[x.id]][0]}</span></div><div class="d">${esc(x.description || "")}</div><div class="m">${fmtDate(x.date)} · ${esc(x.result || "")} ${x.tally.yea}–${x.tally.nay}</div></div>`).join("") : `<div class="empty">No votes recorded yet.</div>`}
+    <p class="sub" style="margin-top:14px"><a href="https://johnhubert.llc/floor/#/member/${m.id}" target="_blank">Full record on the web ›</a></p></div>${tabbar()}`;
+}
+async function voteView(id) {
+  const v = await voteDetail(id); if (!v) return `<div class="view"><a class="back" data-back="1">‹ Back</a><div class="empty">Vote not found.</div></div>${tabbar()}`;
+  const mine = S.follows.map(x => BY_ID[x]).filter(m => m && v.positions[m.id] !== undefined);
+  const bp = v.byParty || {};
+  const prow = (l, c, b) => { if (!b) return ""; const t = b.Y + b.N + b.P + b["-"]; if (!t) return ""; return `<div class="prow"><span class="lab"><span class="dot ${c}"></span>${l}</span><div class="bar"><i style="width:${b.Y / t * 100}%;background:var(--yea)"></i><i style="width:${b.N / t * 100}%;background:var(--nay)"></i><i style="width:${(b.P + b["-"]) / t * 100}%;background:var(--nv)"></i></div><span class="n">${b.Y}–${b.N}</span></div>`; };
+  const src = v.chamber === "senate" ? `https://www.senate.gov/legislative/LIS/roll_call_votes/vote${v.congress}${v.session}/vote_${v.congress}_${v.session}_${String(v.number).padStart(5, "0")}.htm` : `https://clerk.house.gov/Votes/${(v.date || "").slice(0, 4)}${v.number}`;
+  return `<div class="view"><a class="back" data-back="1">‹ Back</a>
+    <div class="eyebrow">${v.chamber === "senate" ? "Senate" : "House"} · Roll call ${v.number} · ${fmtDate(v.date)}</div>
+    <div class="h" style="font-size:22px;margin-top:0">${esc(v.description || v.bill || v.question)}</div>
+    <div class="meta">${esc(v.question || "")}${v.bill ? " · " + esc(v.bill) : ""} · <b style="color:${/pass|agree|adopt/i.test(v.result || "") ? "var(--yea)" : "var(--ink)"}">${esc(v.result || "")} ${v.tally.yea}–${v.tally.nay}</b></div>
+    ${mine.length ? `<div class="eyebrow">Your representatives</div>${mine.map(m => `<div class="card row" data-member="${m.id}" style="padding:10px 12px">${photoEl(m, "sm")}<div><div class="name" style="font-size:15px">${esc(m.name)}</div><div class="meta"><span class="dot ${m.partyCode}"></span>${esc(seat(m))}</div></div><span class="tag ${POS[v.positions[m.id]][1]}" style="margin-left:auto">${POS[v.positions[m.id]][0]}</span></div>`).join("")}` : ""}
+    <div class="eyebrow">What this bill does</div><div class="summary" id="summary"><div class="src">Official summary · Congressional Research Service</div><span class="meta">Loading summary…</span></div>
+    <div class="eyebrow">By party</div><div class="card">${prow("Democrats", "D", bp.D)}${prow("Republicans", "R", bp.R)}${prow("Independents", "I", bp.I)}<div class="meta" style="margin-top:8px">Green yea · red nay · grey present or not voting</div></div>
+    <p class="sub"><a href="${src}" target="_blank">Official record ›</a> · <a href="https://johnhubert.llc/floor/#/vote/${v.id}" target="_blank">Every member's vote ›</a></p></div>${tabbar()}`;
+}
+async function loadSummary(v) {
+  // Summaries are fetched through our API so the Congress.gov key never ships in the app.
+  const el = $("#summary"); if (!el) return;
+  try { const r = await fetch(`${API}/v1/summary?vote=${encodeURIComponent(v)}`); const j = await r.json(); el.innerHTML = `<div class="src">Official summary · Congressional Research Service</div>${j.summary ? esc(j.summary) : `<span class="meta">No CRS summary has been published for this measure yet.</span>`}`; }
+  catch (e) { el.innerHTML = `<div class="src">Official summary</div><span class="meta">Couldn't load the summary right now.</span>`; }
+}
+function votesView() {
+  if (S.view?.vote) return voteView(S.view.vote);
+  const ch = S.view?.chamber || "";
+  const vs = (ch ? VOTES.filter(v => v.chamber === ch) : VOTES).slice(0, 60);
+  return `<div class="view"><div class="h">All roll-call votes</div><div class="seg" id="ch">${[["", "Both"], ["house", "House"], ["senate", "Senate"]].map(([k, l]) => `<button data-ch="${k}" class="${ch === k ? "on" : ""}">${l}</button>`).join("")}</div><div style="height:6px"></div>
+    ${vs.length ? vs.map(v => `<div class="vote" data-vote="${v.id}"><div class="q">${esc(v.question || "Vote")}${v.bill ? " · " + esc(v.bill) : ""}</div><div class="d">${esc(v.description || "")}</div><div class="m">${v.chamber === "senate" ? "Senate" : "House"} · ${fmtDate(v.date)} · ${esc(v.result || "")} ${v.tally.yea}–${v.tally.nay}</div></div>`).join("") : `<div class="empty">Vote records load after the next nightly update.</div>`}</div>${tabbar()}`;
+}
+function settingsView() {
+  const status = { on: "On", denied: "Off in iPhone Settings", error: "Couldn't register", web: "Not available on the web", unknown: "Not set up" }[S.pushStatus] || S.pushStatus;
+  const followed = S.follows.map(id => BY_ID[id]).filter(Boolean);
+  return `<div class="view"><div class="h">Settings</div>
+    <div class="eyebrow">Alerts</div><div class="card" style="padding:2px 14px">
+      <div class="setting"><div>Final passage votes<small>The vote that decides a bill</small></div><button class="toggle ${S.mode === "passage" ? "on" : ""}" data-set="mode:passage"></button></div>
+      <div class="setting"><div>Every roll call<small>Amendments and procedure too</small></div><button class="toggle ${S.mode === "all" ? "on" : ""}" data-set="mode:all"></button></div>
+      <div class="setting"><div>Include the bill summary<small>First sentence in the notification</small></div><button class="toggle ${S.summary ? "on" : ""}" data-set="summary"></button></div>
+      <div class="setting"><div>Quiet hours<small>Hold alerts 10 PM – 8 AM Eastern</small></div><button class="toggle ${S.quiet ? "on" : ""}" data-set="quiet"></button></div></div>
+    <div class="eyebrow">Following</div><div class="card" style="padding:2px 14px">${followed.length ? followed.map(m => `<div class="setting"><div>${esc(m.name)} <small>${esc(seat(m))}</small></div>${followToggle(m)}</div>`).join("") : `<div class="setting"><div class="meta">Nobody yet. Pick representatives in My reps.</div></div>`}
+      <div class="setting" style="color:var(--accent)" data-go="zip">Change ZIP code (${esc(S.zip)}) ›</div></div>
+    <div class="eyebrow">Notifications</div><div class="card"><div class="row" style="justify-content:space-between"><span>Status</span><b>${status}</b></div>${S.pushStatus === "denied" ? `<div class="meta" style="margin-top:6px">Open iPhone Settings › Notifications › Open Chambers and allow notifications.</div>` : ""}${S.pushStatus === "unknown" && isNative() ? `<div style="margin-top:10px"><button class="btn ghost" data-go="push">Turn on notifications</button></div>` : ""}</div>
+    <div class="eyebrow">About</div><div class="card"><div class="meta">Open Chambers shows the public record of Congress with no commentary. Members and votes come from the U.S. House Clerk, the Senate, and the unitedstates project; ideology scores from Voteview; bill summaries from the Congressional Research Service. Your ZIP stays on this phone; the alerts service stores only an anonymous notification token and the members you follow.</div>
+      <div class="meta" style="margin-top:8px"><a href="https://johnhubert.llc/floor/#/about" target="_blank">Methodology</a> · <a href="https://johnhubert.llc/privacy.html" target="_blank">Privacy</a> · <a href="mailto:support@johnhubert.llc">Support</a>${META.builtAt ? ` · Data ${fmtDate(META.builtAt.slice(0, 10))}` : ""}</div></div></div>${tabbar()}`;
+}
+
+/* ===================== render + events ===================== */
+let renderSeq = 0;
+async function render() {
+  const seq = ++renderSeq;
+  let html;
+  if (!S.zip || S.step === "zip") html = onboardingZip();
+  else if (S.step === "reps") html = await onboardingReps();
+  else if (S.tab === "today") html = await todayView();
+  else if (S.tab === "reps") html = await repsView();
+  else if (S.tab === "votes") html = await votesView();
+  else html = settingsView();
+  if (seq !== renderSeq) return;
+  app.innerHTML = html;
+  const zf = $("#zipform"); if (zf) zf.onsubmit = e => { e.preventDefault(); const z = $("#zip").value.trim(); if (/^\d{5}$/.test(z)) { S.zip = z; S.step = "reps"; saveState(); render(); } };
+  if (S.view?.vote && $("#summary")) loadSummary(S.view.vote);
+  if (S.view?.vote || S.view?.member) app.querySelector(".view")?.scrollTo(0, 0);
+}
+app.addEventListener("click", async e => {
+  const t = e.target.closest("[data-follow],[data-tab],[data-vote],[data-member],[data-go],[data-back],[data-mode],[data-set],[data-ch]"); if (!t) return;
+  if (t.dataset.follow) { const id = t.dataset.follow; S.follows = S.follows.includes(id) ? S.follows.filter(x => x !== id) : [...S.follows, id]; haptic(); saveState(); syncSubscription(); t.classList.toggle("on"); if (S.step === "reps") { const b = app.querySelector("[data-go=done]"); if (b) { b.disabled = !S.follows.length; b.textContent = S.follows.length ? "Turn on alerts" : "Pick at least one"; } } return; }
+  if (t.dataset.tab) { S.tab = t.dataset.tab; S.view = null; render(); return; }
+  if (t.dataset.vote) { S.view = { vote: t.dataset.vote }; render(); return; }
+  if (t.dataset.member) { S.view = { member: t.dataset.member }; render(); return; }
+  if (t.dataset.back !== undefined) { S.view = null; render(); return; }
+  if (t.dataset.mode) { S.mode = t.dataset.mode; saveState(); syncSubscription(); app.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b === t)); return; }
+  if (t.dataset.ch !== undefined) { S.view = { chamber: t.dataset.ch }; render(); return; }
+  if (t.dataset.set) { const [k, val] = t.dataset.set.split(":"); if (k === "mode") S.mode = val; else S[k] = !S[k]; saveState(); syncSubscription(); render(); return; }
+  if (t.dataset.go === "zip") { S.step = "zip"; S.view = null; render(); return; }
+  if (t.dataset.go === "done") { S.step = null; S.tab = "today"; saveState(); render(); await setupPush(); await syncSubscription(); render(); return; }
+  if (t.dataset.go === "push") { await setupPush(); await syncSubscription(); render(); return; }
+});
+window.addEventListener("hashchange", () => { const m = location.hash.match(/#\/vote\/([\w-]+)/); if (m) { S.tab = "today"; S.view = { vote: m[1] }; render(); } });
+
+(async () => {
+  loadState();
+  try { await loadData(); } catch (e) { app.innerHTML = `<div class="view"><div class="empty">Couldn't reach the data (${esc(e.message)}). Check your connection and reopen.</div></div>`; return; }
+  if (S.zip && !S.step && isNative() && S.pushStatus === "on") setupPush(); // re-register on launch: tokens can rotate
+  render();
+})();
+</script>
+</body>
+</html>

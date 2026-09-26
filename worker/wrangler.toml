@@ -1,0 +1,26 @@
+name = "openchambers-api"
+main = "src/index.mjs"
+compatibility_date = "2026-09-01"
+
+# Custom domain (the zone johnhubert.llc is on Cloudflare). Remove this block to use the workers.dev URL.
+routes = [{ pattern = "api.johnhubert.llc", custom_domain = true }]
+
+[triggers]
+crons = ["*/10 13-23 * * 1-5", "*/10 0-3 * * 2-6", "0 */2 * * *"]   # every 10 min during floor hours (ET), plus a slow heartbeat
+
+[[d1_databases]]
+binding = "DB"
+database_name = "openchambers"
+database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+
+[vars]
+DATA_BASE = "https://johnhubert.llc/floor/data"
+CONGRESS = "119"
+APNS_HOST = "https://api.push.apple.com"      # use https://api.sandbox.push.apple.com for Xcode debug builds
+APNS_TOPIC = "com.johnhubert.openchambers"
+
+# Secrets (set with `wrangler secret put NAME`):
+#   APNS_KEY      contents of the .p8 auth key from developer.apple.com (Keys → Apple Push Notifications service)
+#   APNS_KEY_ID   the 10-character key id
+#   APNS_TEAM_ID  your Apple Developer Team id
+#   CONGRESS_API_KEY  from https://api.congress.gov/sign-up/  (free; used for CRS bill summaries)

@@ -1,0 +1,6 @@
+node_modules/
+app/www/
+app/ios/App/Pods/
+.wrangler/
+.DS_Store
+*.p8
