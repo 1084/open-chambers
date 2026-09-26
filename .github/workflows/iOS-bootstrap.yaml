@@ -1,0 +1,22 @@
+name: ios-bootstrap
+# One-time: generates app/ios (the Xcode project) on a macOS runner and commits it,
+# because the iMac can't run Xcode 26. Run from the Actions tab → "Run workflow".
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  bootstrap:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci --no-audit --no-fund
+        working-directory: app
+      - run: npm run add-ios
+        working-directory: app
+      - name: Commit ios/
+        run: |
+          git config user.name "openchambers-bot"; git config user.email "support@johnhubert.llc"
+          git add app/ios
+          git commit -m "Add generated iOS project" || echo "nothing to commit"
+          git push
