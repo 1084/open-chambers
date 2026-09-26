@@ -1,6 +1,6 @@
 # Open Chambers
 
-iPhone app that tells you when your representative or senators vote, with a one-line official summary of the bill. Companion to [The Floor](https://johnhubert.llc/floor/) (the web app, which can be renamed to match) and reads the same nightly data.
+iPhone app that tells you when your representative or senators vote, with a one-line official summary of the bill. Companion to [The Floor](https://johnhubert.llc/floor/) (the web app) and reads the same nightly data.
 
 Bundle id `com.johnhubert.openchambers` · Copyright © 2026 John Hubert LLC.
 

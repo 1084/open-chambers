@@ -11,7 +11,7 @@ crons = ["*/10 13-23 * * 1-5", "*/10 0-3 * * 2-6", "0 */2 * * *"]   # every 10 m
 [[d1_databases]]
 binding = "DB"
 database_name = "openchambers"
-database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+database_id = "7383139f-6a90-47e0-a716-f70331c0a3f8"
 
 [vars]
 DATA_BASE = "https://johnhubert.llc/floor/data"
