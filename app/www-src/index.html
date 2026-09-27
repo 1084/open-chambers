@@ -65,7 +65,7 @@ const seat = m => m.chamber === "senate" ? `Senate, ${STATES[m.state] || m.state
 let MEMBERS = [], BY_ID = {}, VOTES = [], META = {}, ZIP = null;
 const S = { zip: "", follows: [], mode: "passage", summary: true, quiet: false, pushToken: null, pushStatus: "unknown", tab: "today", view: null };
 function loadState() { try { Object.assign(S, JSON.parse(localStorage.getItem("openchambers") || "{}")); } catch (e) {} S.view = null; }
-function saveState() { try { localStorage.setItem("openchambers", JSON.stringify({ zip:S.zip, follows:S.follows, mode:S.mode, summary:S.summary, quiet:S.quiet, pushToken:S.pushToken, pushStatus:S.pushStatus })); } catch (e) {} }
+function saveState() { try { localStorage.setItem("openchambers", JSON.stringify({ zip:S.zip, follows:S.follows, mode:S.mode, summary:S.summary, quiet:S.quiet, pushToken:S.pushToken, pushStatus:S.pushStatus, pushError:S.pushError })); } catch (e) {} }
 
 async function loadData() {
   const [m, v, meta] = await Promise.all([fetch(DATA + "members.json").then(r => r.json()), fetch(DATA + "votes-index.json").then(r => r.json()).catch(() => []), fetch(DATA + "meta.json").then(r => r.json()).catch(() => ({}))]);
@@ -89,13 +89,13 @@ async function setupPush() {
   try {
     const PN = window.Capacitor.registerPlugin("PushNotifications");
     PN.addListener("registration", async t => { S.pushToken = t.value; S.pushStatus = "on"; saveState(); await syncSubscription(); render(); });
-    PN.addListener("registrationError", e => { S.pushStatus = "error"; saveState(); render(); });
+    PN.addListener("registrationError", e => { S.pushStatus = "error"; S.pushError = String(e?.error || JSON.stringify(e)); saveState(); render(); });
     PN.addListener("pushNotificationActionPerformed", a => { const d = a.notification?.data || {}; if (d.voteId) { S.tab = "today"; S.view = { vote: d.voteId }; render(); } });
     let perm = await PN.checkPermissions();
     if (perm.receive === "prompt") perm = await PN.requestPermissions();
     if (perm.receive !== "granted") { S.pushStatus = "denied"; saveState(); return; }
     await PN.register();
-  } catch (e) { S.pushStatus = "error"; saveState(); }
+  } catch (e) { S.pushStatus = "error"; S.pushError = String(e?.message || e); saveState(); }
 }
 async function syncSubscription() {
   if (!S.pushToken) return;
@@ -209,7 +209,7 @@ function settingsView() {
       <div class="setting"><div>Quiet hours<small>Hold alerts 10 PM – 8 AM Eastern</small></div><button class="toggle ${S.quiet ? "on" : ""}" data-set="quiet"></button></div></div>
     <div class="eyebrow">Following</div><div class="card" style="padding:2px 14px">${followed.length ? followed.map(m => `<div class="setting"><div>${esc(m.name)} <small>${esc(seat(m))}</small></div>${followToggle(m)}</div>`).join("") : `<div class="setting"><div class="meta">Nobody yet. Pick representatives in My reps.</div></div>`}
       <div class="setting" style="color:var(--accent)" data-go="zip">Change ZIP code (${esc(S.zip)}) ›</div></div>
-    <div class="eyebrow">Notifications</div><div class="card"><div class="row" style="justify-content:space-between"><span>Status</span><b>${status}</b></div>${S.pushStatus === "denied" ? `<div class="meta" style="margin-top:6px">Open iPhone Settings › Notifications › Open Chambers and allow notifications.</div>` : ""}${S.pushStatus === "unknown" && isNative() ? `<div style="margin-top:10px"><button class="btn ghost" data-go="push">Turn on notifications</button></div>` : ""}</div>
+    <div class="eyebrow">Notifications</div><div class="card"><div class="row" style="justify-content:space-between"><span>Status</span><b>${status}</b></div>${S.pushStatus === "error" && S.pushError ? `<div class="meta" style="margin-top:6px;font-family:var(--mono);font-size:12px">${esc(S.pushError)}</div><div style="margin-top:10px"><button class="btn ghost" data-go="push">Try again</button></div>` : ""}${S.pushStatus === "denied" ? `<div class="meta" style="margin-top:6px">Open iPhone Settings › Notifications › Open Chambers and allow notifications.</div>` : ""}${S.pushStatus === "unknown" && isNative() ? `<div style="margin-top:10px"><button class="btn ghost" data-go="push">Turn on notifications</button></div>` : ""}</div>
     <div class="eyebrow">About</div><div class="card"><div class="meta">Open Chambers shows the public record of Congress with no commentary. Members and votes come from the U.S. House Clerk, the Senate, and the unitedstates project; ideology scores from Voteview; bill summaries from the Congressional Research Service. Your ZIP stays on this phone; the alerts service stores only an anonymous notification token and the members you follow.</div>
       <div class="meta" style="margin-top:8px"><a href="https://johnhubert.llc/floor/#/about" target="_blank">Methodology</a> · <a href="https://johnhubert.llc/privacy.html" target="_blank">Privacy</a> · <a href="mailto:support@johnhubert.llc">Support</a>${META.builtAt ? ` · Data ${fmtDate(META.builtAt.slice(0, 10))}` : ""}</div></div></div>${tabbar()}`;
 }

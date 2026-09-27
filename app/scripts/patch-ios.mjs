@@ -47,3 +47,18 @@ copyFileSync(join(root, "ci_scripts/ci_post_clone.sh"), join(ciDst, "ci_post_clo
 const iconDst = join(appDir, "Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png");
 if (existsSync(join(root, "resources/AppIcon-1024.png")) && existsSync(dirname(iconDst))) copyFileSync(join(root, "resources/AppIcon-1024.png"), iconDst);
 console.log("ios patched: ci_scripts, app icon");
+
+// AppDelegate hooks required by @capacitor/push-notifications.
+const ad = join(appDir, "AppDelegate.swift"); let a = readFileSync(ad, "utf8");
+if (!a.includes("capacitorDidRegisterForRemoteNotifications")) {
+  a = a.replace("    func applicationWillResignActive", `    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+    }
+
+    func applicationWillResignActive`);
+  writeFileSync(ad, a); console.log("ios patched: AppDelegate push hooks");
+}
