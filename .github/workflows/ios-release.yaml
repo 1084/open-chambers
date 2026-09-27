@@ -18,7 +18,7 @@ concurrency: { group: ios-release, cancel-in-progress: false }
 env:
   TEAM_ID: 744F7V77PD
   BUNDLE_ID: com.johnhubert.openchambers
-  PROFILE_NAME: Open Chambers App Store
+  PROFILE_NAME: Open Chambers
   MARKETING_VERSION: "1.0"
 jobs:
   build:
