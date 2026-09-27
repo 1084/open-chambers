@@ -21,7 +21,7 @@ const UA = { "user-agent": "openchambers-alerts (johnhubert.llc; support@johnhub
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
-    if (req.method === "OPTIONS") return json({}, 204);
+    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type", "access-control-allow-methods": "GET,POST,DELETE,OPTIONS", "access-control-max-age": "86400" } });
     if (url.pathname === "/v1/health") {
       const s = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM subscriptions) AS subs, (SELECT COUNT(*) FROM seen_votes) AS seen").first();
       const last = await getState(env, "last_run");
