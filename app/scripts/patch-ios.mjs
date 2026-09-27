@@ -13,7 +13,7 @@ const ent = join(appDir, "App.entitlements");
 writeFileSync(ent, `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>aps-environment</key><string>development</string>
+  <key>aps-environment</key><string>production</string>
 </dict></plist>
 `);
 copyFileSync(join(root, "resources/PrivacyInfo.xcprivacy"), join(appDir, "PrivacyInfo.xcprivacy"));
