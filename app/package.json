@@ -2,7 +2,7 @@
   "name": "openchambers-ios",
   "version": "1.0.0",
   "private": true,
-  "description": "Open Chambers — iPhone app (Capacitor shell around www-src)",
+  "description": "Open Chambers \u2014 iPhone app (Capacitor shell around www-src)",
   "scripts": {
     "prepare-www": "node scripts/prepare-www.mjs",
     "sync": "npm run prepare-www && npx cap sync ios",
@@ -17,6 +17,7 @@
     "@capacitor/status-bar": "^8.0.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.0.0"
+    "@capacitor/cli": "^8.0.0",
+    "esbuild": "^0.25.0"
   }
 }

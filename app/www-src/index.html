@@ -48,6 +48,7 @@
 </head>
 <body>
 <div id="app"><div class="view"><div class="empty">Loading…</div></div></div>
+<script src="native.js"></script>
 
 <script>
 /* ===================== config + state ===================== */
@@ -83,11 +84,11 @@ async function repsForZip(z) {
 }
 
 /* ===================== push (native only) ===================== */
-const isNative = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const isNative = () => !!(window.CapPlugins && window.CapPlugins.Capacitor.isNativePlatform());
 async function setupPush() {
   if (!isNative()) { S.pushStatus = "web"; return; }
   try {
-    const PN = window.Capacitor.registerPlugin("PushNotifications");
+    const PN = window.CapPlugins.PushNotifications;
     PN.addListener("registration", async t => { S.pushToken = t.value; S.pushStatus = "on"; saveState(); await syncSubscription(); render(); });
     PN.addListener("registrationError", e => { S.pushStatus = "error"; S.pushError = String(e?.error || JSON.stringify(e)); saveState(); render(); });
     PN.addListener("pushNotificationActionPerformed", a => { const d = a.notification?.data || {}; if (d.voteId) { S.tab = "today"; S.view = { vote: d.voteId }; render(); } });
@@ -104,7 +105,7 @@ async function syncSubscription() {
     await fetch(API + "/v1/subscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: S.pushToken, follows: S.follows, mode: S.mode, summary: S.summary, quiet: S.quiet }) });
   } catch (e) { console.warn("subscribe failed", e); }
 }
-function haptic() { try { if (isNative()) window.Capacitor.registerPlugin("Haptics").impact({ style: "LIGHT" }); } catch (e) {} }
+function haptic() { try { if (isNative()) window.CapPlugins.Haptics.impact({ style: window.CapPlugins.ImpactStyle.Light }); } catch (e) {} }
 
 /* ===================== components ===================== */
 function photoEl(m, cls = "") { return `<img class="avatar ${cls}" src="${photo(m.id)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'avatar initials ${cls}',textContent:'${esc(m.first[0] + m.last[0])}'}))">`; }
