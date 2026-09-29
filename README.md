@@ -2,7 +2,7 @@
 
 iPhone app that tells you when your representative or senators vote, with a one-line official summary of the bill. Companion to [The Floor](https://johnhubert.llc/floor/) (the web app) and reads the same nightly data.
 
-Bundle id `com.johnhubert.openchambers` · Copyright © 2026 John Hubert LLC.
+Bundle id `com.johnhubert.openchambers` · Copyright © 2026 John Hubert LLC. Operations and troubleshooting: see `ADMIN.md`.
 
 ```
 openchambers/
