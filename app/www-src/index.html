@@ -64,9 +64,9 @@ const fmtDate = d => d ? new Date(d + "T12:00:00").toLocaleDateString(undefined,
 const seat = m => m.chamber === "senate" ? `Senate, ${STATES[m.state] || m.state}` : `House, ${m.state}${m.district ? "-" + m.district : " at large"}`;
 
 let MEMBERS = [], BY_ID = {}, VOTES = [], META = {}, ZIP = null;
-const S = { zip: "", follows: [], mode: "passage", summary: true, quiet: false, pushToken: null, pushStatus: "unknown", tab: "today", view: null };
+const S = { zip: "", follows: [], mode: "passage", summary: true, quiet: false, alerts: true, pushToken: null, pushStatus: "unknown", tab: "today", view: null };
 function loadState() { try { Object.assign(S, JSON.parse(localStorage.getItem("openchambers") || "{}")); } catch (e) {} S.view = null; }
-function saveState() { try { localStorage.setItem("openchambers", JSON.stringify({ zip:S.zip, follows:S.follows, mode:S.mode, summary:S.summary, quiet:S.quiet, pushToken:S.pushToken, pushStatus:S.pushStatus, pushError:S.pushError })); } catch (e) {} }
+function saveState() { try { localStorage.setItem("openchambers", JSON.stringify({ zip:S.zip, follows:S.follows, mode:S.mode, summary:S.summary, quiet:S.quiet, alerts:S.alerts, pushToken:S.pushToken, pushStatus:S.pushStatus, pushError:S.pushError })); } catch (e) {} }
 
 async function loadData() {
   const [m, v, meta] = await Promise.all([fetch(DATA + "members.json").then(r => r.json()), fetch(DATA + "votes-index.json").then(r => r.json()).catch(() => []), fetch(DATA + "meta.json").then(r => r.json()).catch(() => ({}))]);
@@ -101,7 +101,7 @@ async function setupPush() {
 async function syncSubscription() {
   if (!S.pushToken) return;
   try {
-    if (!S.follows.length) { await fetch(API + "/v1/subscribe", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: S.pushToken }) }); return; }
+    if (!S.follows.length || S.alerts === false) { await fetch(API + "/v1/subscribe", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: S.pushToken }) }); return; }
     await fetch(API + "/v1/subscribe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: S.pushToken, follows: S.follows, mode: S.mode, summary: S.summary, quiet: S.quiet }) });
   } catch (e) { console.warn("subscribe failed", e); }
 }
@@ -146,7 +146,7 @@ async function todayView() {
   const today = new Date().toISOString().slice(0, 10), week = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
   const t = items.filter(i => i.v.date === today), w = items.filter(i => i.v.date < today && i.v.date >= week), older = items.filter(i => i.v.date < week);
   const sec = (title, list, n) => list.length ? `<div class="eyebrow">${title}</div>${list.slice(0, n).map(i => voteCard(i.v, i.m, i.p)).join("")}` : "";
-  const pushNote = S.pushStatus === "denied" ? `<div class="note">Notifications are off for Open Chambers. Turn them on in Settings › Notifications to get alerts.</div>` : S.pushStatus === "web" ? `<div class="note">Alerts arrive as notifications in the iPhone app. On the web, check back here.</div>` : "";
+  const pushNote = S.alerts === false ? `<div class="note">Alerts are paused. Turn them back on in Settings.</div>` : S.pushStatus === "denied" ? `<div class="note">Notifications are off for Open Chambers. Turn them on in Settings › Notifications to get alerts.</div>` : S.pushStatus === "web" ? `<div class="note">Alerts arrive as notifications in the iPhone app. On the web, check back here.</div>` : "";
   return `<div class="view"><div class="eyebrow" style="margin-top:4px">${new Date().toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric" })}</div>
     <div class="h" style="font-size:24px;margin-top:0">${t.length ? `Your reps voted ${t.length} time${t.length === 1 ? "" : "s"} today` : "No votes from your reps today"}</div>${pushNote}
     ${sec("Today", t, 50)}${sec("This week", w, 30)}${sec("Earlier", older, 40)}
@@ -210,7 +210,9 @@ function settingsView() {
       <div class="setting"><div>Quiet hours<small>Hold alerts 10 PM – 8 AM Eastern</small></div><button class="toggle ${S.quiet ? "on" : ""}" data-set="quiet"></button></div></div>
     <div class="eyebrow">Following</div><div class="card" style="padding:2px 14px">${followed.length ? followed.map(m => `<div class="setting"><div>${esc(m.name)} <small>${esc(seat(m))}</small></div>${followToggle(m)}</div>`).join("") : `<div class="setting"><div class="meta">Nobody yet. Pick representatives in My reps.</div></div>`}
       <div class="setting" style="color:var(--accent)" data-go="zip">Change ZIP code (${esc(S.zip)}) ›</div></div>
-    <div class="eyebrow">Notifications</div><div class="card"><div class="row" style="justify-content:space-between"><span>Status</span><b>${status}</b></div>${S.pushStatus === "error" && S.pushError ? `<div class="meta" style="margin-top:6px;font-family:var(--mono);font-size:12px">${esc(S.pushError)}</div><div style="margin-top:10px"><button class="btn ghost" data-go="push">Try again</button></div>` : ""}${S.pushStatus === "denied" ? `<div class="meta" style="margin-top:6px">Open iPhone Settings › Notifications › Open Chambers and allow notifications.</div>` : ""}${S.pushStatus === "unknown" && isNative() ? `<div style="margin-top:10px"><button class="btn ghost" data-go="push">Turn on notifications</button></div>` : ""}</div>
+    <div class="eyebrow">Notifications</div><div class="card" style="padding:2px 14px">
+      <div class="setting"><div>Send me alerts<small>${S.alerts === false ? "Paused. Your follows are kept." : "Turn off to pause without unfollowing"}</small></div><button class="toggle ${S.alerts === false ? "" : "on"}" data-set="alerts"></button></div>
+      <div class="setting"><div>iPhone permission<small>${status}</small></div></div>${S.pushStatus === "error" && S.pushError ? `<div class="setting"><div class="meta" style="font-family:var(--mono);font-size:12px">${esc(S.pushError)}</div></div><div class="setting"><button class="btn ghost" data-go="push">Try again</button></div>` : ""}${S.pushStatus === "denied" ? `<div class="setting"><div class="meta">Open iPhone Settings › Notifications › Open Chambers and allow notifications.</div></div>` : ""}${S.pushStatus === "unknown" && isNative() ? `<div class="setting"><button class="btn ghost" data-go="push">Turn on notifications</button></div>` : ""}</div>
     <div class="eyebrow">About</div><div class="card"><div class="meta">Open Chambers shows the public record of Congress with no commentary. Members and votes come from the U.S. House Clerk, the Senate, and the unitedstates project; ideology scores from Voteview; bill summaries from the Congressional Research Service. Your ZIP stays on this phone; the alerts service stores only an anonymous notification token and the members you follow.</div>
       <div class="meta" style="margin-top:8px"><a href="https://johnhubert.llc/floor/#/about" target="_blank">Methodology</a> · <a href="https://johnhubert.llc/privacy.html" target="_blank">Privacy</a> · <a href="mailto:support@johnhubert.llc">Support</a>${META.builtAt ? ` · Data ${fmtDate(META.builtAt.slice(0, 10))}` : ""}</div></div></div>${tabbar()}`;
 }
@@ -241,7 +243,7 @@ app.addEventListener("click", async e => {
   if (t.dataset.back !== undefined) { S.view = null; render(); return; }
   if (t.dataset.mode) { S.mode = t.dataset.mode; saveState(); syncSubscription(); app.querySelectorAll("#mode button").forEach(b => b.classList.toggle("on", b === t)); return; }
   if (t.dataset.ch !== undefined) { S.view = { chamber: t.dataset.ch }; render(); return; }
-  if (t.dataset.set) { const [k, val] = t.dataset.set.split(":"); if (k === "mode") S.mode = val; else S[k] = !S[k]; saveState(); syncSubscription(); render(); return; }
+  if (t.dataset.set) { const [k, val] = t.dataset.set.split(":"); if (k === "mode") S.mode = val; else if (k === "alerts") S.alerts = S.alerts === false; else S[k] = !S[k]; saveState(); haptic(); if (k === "alerts" && S.alerts && isNative() && !S.pushToken) { await setupPush(); } await syncSubscription(); render(); return; }
   if (t.dataset.go === "zip") { S.step = "zip"; S.view = null; render(); return; }
   if (t.dataset.go === "done") { S.step = null; S.tab = "today"; saveState(); render(); await setupPush(); await syncSubscription(); render(); return; }
   if (t.dataset.go === "push") { await setupPush(); await syncSubscription(); render(); return; }
