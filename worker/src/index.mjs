@@ -55,6 +55,23 @@ export default {
       const summary = await billSummary(env, v);
       return json({ vote: id, bill: v.bill || null, summary }, 200, { "cache-control": "public, max-age=3600" });
     }
+    if (url.pathname === "/v1/status" && req.method === "GET") {
+      // Admin view: everything needed to answer "is it working?". Protected by the Congress key.
+      if (url.searchParams.get("key") !== env.CONGRESS_API_KEY) return json({ error: "no" }, 403);
+      const state = Object.fromEntries((await env.DB.prepare("SELECT key, value FROM state WHERE key NOT LIKE 'summary:%' AND key NOT LIKE 'members_cache%'").all()).results.map(r => [r.key, r.value]));
+      const counts = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM subscriptions) AS subs, (SELECT COUNT(*) FROM follows) AS follows, (SELECT COUNT(*) FROM seen_votes) AS seen, (SELECT COUNT(*) FROM queued) AS queued").first();
+      const recent = (await env.DB.prepare("SELECT vote_id, seen_at FROM seen_votes ORDER BY seen_at DESC LIMIT 10").all()).results;
+      const subs = (await env.DB.prepare("SELECT substr(token,1,8) AS token, mode, summary, quiet, updated_at, (SELECT COUNT(*) FROM follows f WHERE f.token = s.token) AS follows FROM subscriptions s").all()).results;
+      const membersCacheAt = await getState(env, "members_cache_at");
+      return json({ now: now(), state, counts, recentVotes: recent, subscriptions: subs, membersCacheAt: membersCacheAt ? new Date(+membersCacheAt).toISOString() : null, secrets: { APNS_KEY: !!env.APNS_KEY, APNS_KEY_ID: !!env.APNS_KEY_ID, APNS_TEAM_ID: !!env.APNS_TEAM_ID, CONGRESS_API_KEY: !!env.CONGRESS_API_KEY }, config: { DATA_BASE: env.DATA_BASE, CONGRESS: env.CONGRESS, APNS_HOST: env.APNS_HOST, APNS_TOPIC: env.APNS_TOPIC } });
+    }
+    if (url.pathname === "/v1/poll" && req.method === "POST") {
+      // Run one poll now (same as the cron). Protected by the Congress key.
+      const b = await req.json().catch(() => ({}));
+      if (b.key !== env.CONGRESS_API_KEY) return json({ error: "no" }, 403);
+      try { await poll(env); return json({ ok: true, lastRun: await getState(env, "last_run") }); }
+      catch (e) { await setState(env, "last_error", `${now()} ${e && e.stack || e}`.slice(0, 2000)); return json({ ok: false, error: String(e && e.message || e) }, 500); }
+    }
     if (url.pathname === "/v1/test-push" && req.method === "POST") {
       // Sends a test notification to one token. Protected by the Congress key so only you can call it.
       const b = await req.json().catch(() => ({}));
@@ -66,7 +83,7 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(poll(env).catch(e => console.error("poll failed", e)));
+    ctx.waitUntil(poll(env).catch(async e => { console.error("poll failed", e); await setState(env, "last_error", `${now()} ${e && e.stack || e}`.slice(0, 2000)).catch(() => {}); }));
   },
 };
 
@@ -81,6 +98,8 @@ async function poll(env) {
 
   // House: probe roll numbers after the last one we saw this session.
   const hKey = `house_last_${congress}_${session}`;
+  const sKey = `senate_last_${congress}_${session}`;
+  if ((await getState(env, hKey)) === null || (await getState(env, sKey)) === null) await seedHighWater(env, hKey, sKey, congress, session);
   let last = +(await getState(env, hKey) || 0);
   for (let i = 0; i < 25; i++) {
     const n = last + 1;
@@ -94,7 +113,6 @@ async function poll(env) {
   await setState(env, hKey, String(last));
 
   // Senate: the menu lists every vote of the session; take the ones past our high-water mark.
-  const sKey = `senate_last_${congress}_${session}`;
   let sLast = +(await getState(env, sKey) || 0);
   const menu = await fetch(`https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_${congress}_${session}.xml`, { headers: UA });
   if (menu.ok) {
@@ -120,6 +138,22 @@ async function poll(env) {
   await flushQueued(env);
   await setState(env, "last_run", `${started} house=${last} senate=${sLast} new=${newVotes.length} sent=${sent}`);
   console.log("poll", started, "new", newVotes.length, "sent", sent);
+}
+
+// On a fresh database, start from the newest vote the website already knows about instead of vote 1,
+// so the first polls do not send notifications for months-old roll calls.
+async function seedHighWater(env, hKey, sKey, congress, session) {
+  let h = 0, s = 0;
+  try {
+    const idx = await fetch(`${env.DATA_BASE}/votes-index.json`, { headers: UA }).then(r => r.json());
+    for (const v of idx) {
+      const m = /^([hs])-(\d+)-(\d)-(\d+)$/.exec(v.id); if (!m || +m[2] !== congress || +m[3] !== session) continue;
+      if (m[1] === "h") h = Math.max(h, +m[4]); else s = Math.max(s, +m[4]);
+    }
+  } catch (e) { console.warn("seed", e.message); }
+  if ((await getState(env, hKey)) === null) await setState(env, hKey, String(h));
+  if ((await getState(env, sKey)) === null) await setState(env, sKey, String(s));
+  await setState(env, "seeded", `${now()} house=${h} senate=${s}`);
 }
 
 const PASSAGE = /passage|on agreeing to the resolution|on the (joint )?resolution|concur|conference report|override|on the amendment .* as amended|final/i;
