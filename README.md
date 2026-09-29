@@ -79,6 +79,32 @@ Subtitle (30 chars): `Know how your reps vote`
 Promo text: `Enter your ZIP. Follow your representative and senators. Get a notification, with a plain-English official summary, every time they vote.`
 Keywords: `congress,vote,representative,senator,bill,roll call,house,senate,civic,government`
 
+Description (paste as-is; the App Store shows plain text, so no formatting):
+
+```
+Open Chambers shows you how the people who represent you in Congress actually vote.
+
+Enter your ZIP code and the app finds your representative and your two senators. From then on, every time one of them casts a recorded vote, you can get a notification that says how they voted, what the vote was on, and a one-line official summary of the bill, written by the nonpartisan Congressional Research Service.
+
+WHAT YOU SEE
+• A profile for every current member of the House and Senate: party, state and district, how long they have served, when their seat is next on the ballot, and how often they vote with their party and show up to vote.
+• Where each member sits on the DW-NOMINATE scale, the standard measure political scientists use, shown exactly as published by Voteview at UCLA.
+• Every roll-call vote of the current Congress, with the tally, the party breakdown, and each member's position.
+• A link from every vote to the official record on clerk.house.gov or senate.gov, so you can check the source yourself.
+
+ALERTS YOUR WAY
+Choose "Final passage" to hear only about the votes that decide a bill, or "Every roll call" to include amendments and procedural votes. Add the bill summary to the notification or keep it short. Turn on quiet hours to hold alerts overnight.
+
+NO OPINIONS, NO ACCOUNT, NO TRACKING
+Open Chambers adds no commentary, ratings, or endorsements. Every number comes from a public, citable source: the U.S. House Clerk, the U.S. Senate, Congress.gov, the unitedstates project, and Voteview. Your ZIP code stays on your phone. There is no sign-up, no advertising, and no analytics. If you turn on alerts, the only thing stored on our server is an anonymous notification token and the list of members you follow, and it is deleted when you stop following them.
+
+Open Chambers is free, works on any iPhone, and is also available on the web at johnhubert.llc/floor.
+
+Made by John Hubert LLC, a small independent studio. Questions or suggestions: support@johnhubert.llc.
+```
+
+What's New (version 1.0): `First release.`
+
 Screenshots: 6.9" (iPhone 16 Pro Max) and 6.5" sets are required. Take them in the simulator via Xcode Cloud's TestFlight build on any iPhone, or use the mockup artifact frames at 1320×2868.
 
 Review notes to paste: "Open Chambers shows public congressional roll-call votes. No account is needed. To test alerts: enter ZIP 10001, turn on the switch next to any member, allow notifications. Alerts arrive when that member casts a recorded vote; between sessions of Congress there may be none, so the Today tab also lists their recent votes."
