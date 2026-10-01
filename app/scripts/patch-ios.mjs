@@ -30,6 +30,8 @@ if (!p.includes("PrivacyInfo.xcprivacy")) {
   p = p.replace(/(\/\* Info\.plist \*\/,)/, `$1\n\t\t\t\t${fileRef} /* PrivacyInfo.xcprivacy */,`);
   p = p.replace(/(isa = PBXResourcesBuildPhase;[\s\S]*?files = \()/, `$1\n\t\t\t\t${buildRef} /* PrivacyInfo.xcprivacy in Resources */,`);
 }
+// iPhone only (the layout is phone-shaped; also avoids the iPad screenshot requirement).
+p = p.replace(/TARGETED_DEVICE_FAMILY = "1,2";/g, "TARGETED_DEVICE_FAMILY = 1;");
 writeFileSync(pbx, p);
 
 // Info.plist: background remote notifications + no arbitrary loads needed (all HTTPS).
