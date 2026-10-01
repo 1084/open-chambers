@@ -14,6 +14,7 @@
   html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased; -webkit-user-select:none; user-select:none; overscroll-behavior:none }
   a { color:var(--accent); text-decoration:none }
   #app { position:fixed; inset:0; display:flex; flex-direction:column }
+  #app::before { content:""; position:fixed; top:0; left:0; right:0; height:var(--safe-t); background:var(--bg); z-index:5; pointer-events:none } /* keeps scrolled content from showing through the status bar */
   .view { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:calc(10px + var(--safe-t)) 16px 24px }
   .h { font-family:var(--serif); font-weight:600; font-size:28px; line-height:1.1; letter-spacing:-.01em; margin:10px 0 6px }
   .sub { color:var(--ink-2); font-size:15px; margin:0 0 16px }
